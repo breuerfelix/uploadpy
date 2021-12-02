@@ -19,7 +19,8 @@ RUN apt-get install -y --no-install-recommends --no-install-suggests \
   cp geckodriver /usr/local/bin/
 
 COPY pyproject.toml .
-COPY highzer highzer
+COPY start.py .
+COPY uploadpy uploadpy
 
 # install dependencies for python
 RUN pip install .
