@@ -6,6 +6,8 @@ WORKDIR /usr/app
 RUN echo "Europe/Berlin" > /etc/timezone
 RUN dpkg-reconfigure -f noninteractive tzdata
 
+RUN apt-get update
+
 # dependencies for selenium
 RUN apt-get install -y --no-install-recommends --no-install-suggests \
   wget bzip2 libgtk-3-0 libdbus-glib-1-2 libx11-xcb1 libxt6 && \
