@@ -11,7 +11,5 @@ in highzer.env.overrideAttrs (oldAttrs: {
     python3
     poetry
     geckodriver
-    #ffmpeg
-    #imagemagick
   ];
 })
