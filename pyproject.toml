@@ -1,11 +1,11 @@
 [tool.poetry]
 name = "uploadpy"
 version = "0.1.0"
-description = "Upload YouTube Videos"
-authors = ["Felix Breuer <f.breuer94@gmail.com>"]
+description = "Automatically upload YouTube videos"
+authors = ["Felix Breuer <fbreuer@pm.me>"]
 
 [tool.poetry.scripts]
-uploadpy = "uploadpy.uploadpy:run"
+uploadpy = "uploadpy.uploadpy:cli"
 
 [tool.poetry.dependencies]
 python = "^3.8"
@@ -24,6 +24,7 @@ google-auth-httplib2 = "^0.1.0"
 Flask = "^2.0.2"
 Werkzeug = "^2.0.2"
 eventlet = "^0.33.0"
+click = "^8.0.3"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.2"

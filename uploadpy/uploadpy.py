@@ -1,9 +1,9 @@
 import os
 import threading
-
 from flask import Flask, request
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
+import click
 import eventlet
 import eventlet.wsgi
 
@@ -80,14 +80,17 @@ def upload_youtube():
     return "done", 200
 
 
-def run():
-    print("starting server...")
+@click.group()
+def cli():
+    pass
 
+
+@cli.command()
+def start():
     port = os.getenv("PORT", 80)
-    port = int(port)
-
-    eventlet.wsgi.server(eventlet.listen(('', port)), app)
+    eventlet.wsgi.server(eventlet.listen(('', int(port))), app)
 
 
 if __name__ == "__main__":
     app.run(debug = True)
+

@@ -21,7 +21,6 @@ RUN apt-get install -y --no-install-recommends --no-install-suggests \
   cp geckodriver /usr/local/bin/
 
 COPY pyproject.toml .
-COPY start.py .
 COPY uploadpy uploadpy
 
 # install dependencies for python
@@ -30,4 +29,4 @@ RUN pip install .
 # otherwhise logs will not get printed to docker logs
 ENV PYTHONUNBUFFERED=1
 
-CMD ["python", "start.py"]
+CMD ["uploadpy", "start"]
