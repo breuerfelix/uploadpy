@@ -2,3 +2,5 @@ data
 *.json
 *.log
 *.lock
+docker-compose.yaml
+docker-compose.yml
