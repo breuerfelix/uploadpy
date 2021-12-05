@@ -80,6 +80,11 @@ def upload_youtube():
     return "done", 200
 
 
+@app.route("/health", methods=["GET"])
+def health():
+    return "still breathing", 200
+
+
 @click.group()
 def cli():
     pass

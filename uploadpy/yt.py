@@ -1,3 +1,4 @@
+import os
 import json
 from threading import Lock
 from .ytbrowser import upload
@@ -5,6 +6,15 @@ from .ytapi import get_api, update, dump_token
 from .utils import folder_files
 
 LOCK = Lock()
+
+def delete_files(ident):
+    extensions = [".mp4", ".json"]
+    for ext in extensions:
+        folder = folder_files()
+        filename = f"{folder}/{ident}{ext}"
+        if os.path.exists(filename):
+            os.remove(filename)
+
 
 def upload_video(ident):
     id = upload(ident)
@@ -27,6 +37,9 @@ def upload_video(ident):
 
     dump_token(creds)
     print( f"Video meta data for {snippet['title']} changed")
+
+    delete_files(ident)
+    print(f"Deleted files for ident: {ident}")
 
 
 def upload_video_locking(ident):
