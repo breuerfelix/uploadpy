@@ -24,6 +24,8 @@ def upload(ident):
 
     options = FirefoxOptions()
     options.add_argument("window-size=1920,1080")
+    options.headless = True
+    options.binary = "/usr/local/bin/firefox"
 
     folder = folder_files()
     video_file_path = Path(f'{folder}/{ident}.mp4').abspath()
