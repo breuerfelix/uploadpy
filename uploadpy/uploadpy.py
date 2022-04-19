@@ -96,6 +96,11 @@ def start():
     eventlet.wsgi.server(eventlet.listen(('', int(port))), app)
 
 
+@cli.command()
+def test():
+    print("imports are working")
+
+
 if __name__ == "__main__":
     app.run(debug = True)
 

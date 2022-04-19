@@ -1,4 +1,4 @@
-FROM python:3.8-slim-buster
+FROM python:3.9-buster
 
 WORKDIR /usr/app
 
@@ -8,17 +8,38 @@ RUN dpkg-reconfigure -f noninteractive tzdata
 
 RUN apt-get update
 
-# dependencies for selenium
-RUN apt-get install -y --no-install-recommends --no-install-suggests \
-  wget bzip2 libgtk-3-0 libdbus-glib-1-2 libx11-xcb1 libxt6 && \
-  wget -q -O - "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64" | tar -xj -C /opt && \
-  ln -s /opt/firefox/firefox /usr/local/bin/ && \
-  export GECKO_DRIVER_VERSION='v0.29.0' && \
-  wget https://github.com/mozilla/geckodriver/releases/download/$GECKO_DRIVER_VERSION/geckodriver-$GECKO_DRIVER_VERSION-linux64.tar.gz && \
-  tar -xvzf geckodriver-$GECKO_DRIVER_VERSION-linux64.tar.gz && \
-  rm geckodriver-$GECKO_DRIVER_VERSION-linux64.tar.gz && \
-  chmod +x geckodriver && \
-  cp geckodriver /usr/local/bin/
+# Install the latest version of Firefox:
+RUN export DEBIAN_FRONTEND=noninteractive \
+  && apt-get update \
+  && apt-get install --no-install-recommends --no-install-suggests -y \
+    # Firefox dependencies:
+    libgtk-3-0 \
+    libdbus-glib-1-2 \
+    # Bzip2 to extract the Firefox tarball:
+    bzip2 \
+    # Reverse proxy for geckodriver:
+    nginx \
+  && DL='https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64' \
+  && curl -sL "$DL" | tar -xj -C /opt \
+  && ln -s /opt/firefox/firefox /usr/local/bin/ \
+  # Remove obsolete files:
+  && apt-get autoremove --purge -y \
+    bzip2 \
+  && apt-get clean \
+  && rm -rf \
+    /tmp/* \
+    /usr/share/doc/* \
+    /var/cache/* \
+    /var/lib/apt/lists/* \
+    /var/tmp/*
+
+# Install the latest version of Geckodriver:
+RUN BASE_URL=https://github.com/mozilla/geckodriver/releases/download \
+  && VERSION=$(curl -sL \
+    https://api.github.com/repos/mozilla/geckodriver/releases/latest | \
+    grep tag_name | cut -d '"' -f 4) \
+  && curl -sL "$BASE_URL/$VERSION/geckodriver-$VERSION-linux64.tar.gz" | \
+    tar -xz -C /usr/local/bin
 
 COPY pyproject.toml .
 COPY uploadpy uploadpy

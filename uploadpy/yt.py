@@ -36,7 +36,7 @@ def upload_video(ident):
         print("Error: Could not update video")
 
     dump_token(creds)
-    print( f"Video meta data for {snippet['title']} changed")
+    print(f"Video meta data for {snippet['title']} changed")
 
     delete_files(ident)
     print(f"Deleted files for ident: {ident}")
@@ -51,3 +51,4 @@ def upload_video_locking(ident):
         print(e)
     finally:
         LOCK.release()
+
