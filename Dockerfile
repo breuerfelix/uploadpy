@@ -6,62 +6,58 @@ WORKDIR /usr/app
 RUN echo "Europe/Berlin" > /etc/timezone
 RUN dpkg-reconfigure -f noninteractive tzdata
 
-RUN apt-get update
+ARG firefox_ver=99.0.1
+ARG geckodriver_ver=0.31.0
+ARG build_rev=0
 
-# base libs
-RUN export DEBIAN_FRONTEND=noninteractive \
-  && apt-get update \
-  && apt-get dist-upgrade -y \
-  && apt-get install --no-install-recommends --no-install-suggests -y \
-    xvfb \
-    xauth \
-    ca-certificates \
-    x11vnc \
-    fluxbox \
-    rxvt-unicode \
-    curl \
-    tini \
-  # Remove obsolete files:
-  && apt-get clean \
-  && rm -rf \
-    /tmp/* \
-    /usr/share/doc/* \
-    /var/cache/* \
-    /var/lib/apt/lists/* \
-    /var/tmp/*
+LABEL org.opencontainers.image.source="\
+    https://github.com/instrumentisto/geckodriver-docker-image"
 
-# Install the latest version of Firefox:
-RUN export DEBIAN_FRONTEND=noninteractive \
-  && apt-get update \
-  && apt-get install --no-install-recommends --no-install-suggests -y \
-    # Firefox dependencies:
-    libgtk-3-0 \
-    libdbus-glib-1-2 \
-    # Bzip2 to extract the Firefox tarball:
-    bzip2 \
-    # Reverse proxy for geckodriver:
-    nginx \
-  && DL='https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64' \
-  && curl -sL "$DL" | tar -xj -C /opt \
-  && ln -s /opt/firefox/firefox /usr/local/bin/ \
-  # Remove obsolete files:
-  && apt-get autoremove --purge -y \
-    bzip2 \
-  && apt-get clean \
-  && rm -rf \
-    /tmp/* \
-    /usr/share/doc/* \
-    /var/cache/* \
-    /var/lib/apt/lists/* \
-    /var/tmp/*
 
-# Install the latest version of Geckodriver:
-RUN BASE_URL=https://github.com/mozilla/geckodriver/releases/download \
-  && VERSION=$(curl -sL \
-    https://api.github.com/repos/mozilla/geckodriver/releases/latest | \
-    grep tag_name | cut -d '"' -f 4) \
-  && curl -sL "$BASE_URL/$VERSION/geckodriver-$VERSION-linux64.tar.gz" | \
-    tar -xz -C /usr/local/bin
+RUN apt-get update \
+ && apt-get upgrade -y \
+ && apt-get install -y --no-install-recommends --no-install-suggests \
+            ca-certificates \
+ && update-ca-certificates \
+    \
+ # Install tools for building
+ && toolDeps=" \
+        curl bzip2 \
+    " \
+ && apt-get install -y --no-install-recommends --no-install-suggests \
+            $toolDeps \
+    \
+ # Install dependencies for Firefox
+ && apt-get install -y --no-install-recommends --no-install-suggests \
+            `apt-cache depends firefox-esr | awk '/Depends:/{print$2}'` \
+            # additional 'firefox-esl' dependencies which is not in 'depends' list
+            libasound2 libxt6 libxtst6 \
+    \
+ # Download and install Firefox
+ && curl -fL -o /tmp/firefox.tar.bz2 \
+         https://ftp.mozilla.org/pub/firefox/releases/${firefox_ver}/linux-x86_64/en-GB/firefox-${firefox_ver}.tar.bz2 \
+ && tar -xjf /tmp/firefox.tar.bz2 -C /tmp/ \
+ && mv /tmp/firefox /opt/firefox \
+    \
+ # Download and install geckodriver
+ && curl -fL -o /tmp/geckodriver.tar.gz \
+         https://github.com/mozilla/geckodriver/releases/download/v${geckodriver_ver}/geckodriver-v${geckodriver_ver}-linux64.tar.gz \
+ && tar -xzf /tmp/geckodriver.tar.gz -C /tmp/ \
+ && chmod +x /tmp/geckodriver \
+ && mv /tmp/geckodriver /usr/local/bin/ \
+    \
+ # Cleanup unnecessary stuff
+ && apt-get purge -y --auto-remove \
+                  -o APT::AutoRemove::RecommendsImportant=false \
+            $toolDeps \
+ && rm -rf /var/lib/apt/lists/* \
+           /tmp/*
+
+
+# As this image cannot run in non-headless mode anyway, it's better to forcibly
+# enable it, regardless whether WebDriver client requests it in capabilities or
+# not.
+ENV MOZ_HEADLESS=1
 
 COPY pyproject.toml .
 COPY uploadpy uploadpy
