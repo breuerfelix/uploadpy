@@ -1,4 +1,4 @@
-FROM python:3.9-buster
+FROM python:3.9-slim-bullseye
 
 WORKDIR /usr/app
 
@@ -7,6 +7,28 @@ RUN echo "Europe/Berlin" > /etc/timezone
 RUN dpkg-reconfigure -f noninteractive tzdata
 
 RUN apt-get update
+
+# base libs
+RUN export DEBIAN_FRONTEND=noninteractive \
+  && apt-get update \
+  && apt-get dist-upgrade -y \
+  && apt-get install --no-install-recommends --no-install-suggests -y \
+    xvfb \
+    xauth \
+    ca-certificates \
+    x11vnc \
+    fluxbox \
+    rxvt-unicode \
+    curl \
+    tini \
+  # Remove obsolete files:
+  && apt-get clean \
+  && rm -rf \
+    /tmp/* \
+    /usr/share/doc/* \
+    /var/cache/* \
+    /var/lib/apt/lists/* \
+    /var/tmp/*
 
 # Install the latest version of Firefox:
 RUN export DEBIAN_FRONTEND=noninteractive \
