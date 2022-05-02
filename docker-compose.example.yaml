@@ -3,6 +3,7 @@ version: '3'
 services:
   highzer:
     image: ghcr.io/breuerfelix/uploadpy:latest
+    restart: always
     build: .
     environment:
       - PORT=80
